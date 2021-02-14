@@ -6,7 +6,13 @@
       </div>
 
       <div class="col-xs-3">
-        <button class="btn btn-success">New Contact</button>
+        <button
+          [routerLink]="['new']"
+          routerLinkActive="router-link-active"
+          class="btn btn-success"
+        >
+          New Contact
+        </button>
       </div>
     </div>
 
@@ -16,7 +22,6 @@
           <cms-contact-item
             *ngFor="let contact of contacts"
             [contact]="contact"
-            (click)="onSelected(contact)"
           >
           </cms-contact-item>
         </div>
