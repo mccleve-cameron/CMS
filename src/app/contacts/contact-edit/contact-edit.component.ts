@@ -61,7 +61,6 @@ export class ContactEditComponent implements OnInit {
       this.groupContacts
     );
 
-    console.log('new contact', newContact);
     if (this.editMode) {
       this.contactService.updateContact(this.originalContact, newContact);
     } else {

@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -9,6 +10,7 @@ import { ContactEditComponent } from './contacts/contact-edit/contact-edit.compo
 import { ContactItemComponent } from './contacts/contact-item/contact-item.component';
 import { ContactListComponent } from './contacts/contact-list/contact-list.component';
 import { ContactService } from './contacts/contact.service';
+import { ContactsFilterPipe } from './contacts/contacts-filter.pipe';
 import { ContactsComponent } from './contacts/contacts.component';
 import { DocumentDetailComponent } from './documents/document-detail/document-detail.component';
 import { DocumentEditComponent } from './documents/document-edit/document-edit.component';
@@ -39,8 +41,15 @@ import { MessageListComponent } from './messages/message-list/message-list.compo
     DropdownDirective,
     DocumentEditComponent,
     ContactEditComponent,
+    ContactsFilterPipe,
   ],
-  imports: [BrowserModule, AppRoutingModule, FormsModule, DndModule.forRoot()],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    DndModule.forRoot(),
+    HttpClientModule,
+  ],
   providers: [ContactService],
   bootstrap: [AppComponent],
 })

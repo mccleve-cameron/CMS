@@ -13,7 +13,7 @@ export class MessageEditComponent implements OnInit {
 
   message: Message;
   id: string;
-  currentSender = '99';
+  currentSender = '10';
 
   constructor(private messageService: MessageService) {}
 
