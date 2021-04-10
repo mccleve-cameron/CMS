@@ -8,21 +8,17 @@ import { Message } from './message.model';
 })
 export class MessageService {
   messages: Message[] = [];
-  maxMessageId: number;
   messageChangedEvent = new Subject<Message[]>();
 
   constructor(private http: HttpClient) {}
 
   getMessages() {
     this.http
-      .get(
-        'https://cms-project-a35c5-default-rtdb.firebaseio.com/messages.json'
-      )
+      .get<{ messages: Message[] }>('http://localhost:3000/messages')
       .subscribe(
-        (messages: Message[]) => {
-          this.messages = messages;
-          this.maxMessageId = this.getMaxId();
-          this.messageChangedEvent.next(this.messages.slice());
+        (responseData) => {
+          this.messages = responseData.messages;
+          this.sortAndSend();
         },
 
         (error: any) => {
@@ -31,46 +27,32 @@ export class MessageService {
       );
   }
 
-  getMaxId(): number {
-    let maxId: number = 0;
-
-    for (const message of this.messages) {
-      const currentId: number = Number(message.id);
-
-      if (currentId > maxId) {
-        maxId = currentId;
-      }
-    }
-    return maxId;
-  }
-
-  storeMessages() {
-    let messages = JSON.stringify(this.messages);
-
-    console.log('stored called');
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
-
-    this.http
-      .put(
-        'https://cms-project-a35c5-default-rtdb.firebaseio.com/messages.json',
-        messages,
-        { headers: headers }
-      )
-      .subscribe(() => {
-        this.messageChangedEvent.next(this.messages.slice());
-      });
+  sortAndSend() {
+    this.messageChangedEvent.next(this.messages.slice());
   }
 
   addMessage(message: Message) {
     if (!message) return;
 
-    this.maxMessageId++;
-    message.id = this.maxMessageId.toString();
-    this.messages.push(message);
+    // make sure id of the new Message is empty
+    message.id = '101';
 
-    this.storeMessages();
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    // add to database
+    this.http
+      .post<{ response: string; newMessage: Message }>(
+        'http://localhost:3000/messages',
+        message,
+        { headers: headers }
+      )
+      .subscribe((responseData) => {
+        // add new message to messages
+        message._id = responseData.newMessage._id;
+        // message.id = responseData.newMessage.id;
+
+        this.messages.push(responseData.newMessage);
+        this.sortAndSend();
+      });
   }
 }

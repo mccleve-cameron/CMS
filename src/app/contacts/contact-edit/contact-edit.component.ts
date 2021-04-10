@@ -16,7 +16,6 @@ export class ContactEditComponent implements OnInit {
   editMode: boolean = false;
   id: string;
   duplicate: boolean = false;
-
   constructor(
     private contactService: ContactService,
     private router: Router,
@@ -31,20 +30,25 @@ export class ContactEditComponent implements OnInit {
         this.editMode = false;
         return;
       }
-      this.originalContact = this.contactService.getContact(this.id);
+      this.contactService.getContact(this.id).subscribe((respone) => {
+        this.originalContact = respone.contact;
 
-      if (!this.originalContact) {
-        return;
-      }
+        if (!this.originalContact) {
+          return;
+        }
 
-      this.editMode = true;
-      this.contact = JSON.parse(JSON.stringify(this.originalContact));
+        this.editMode = true;
+        this.contact = JSON.parse(JSON.stringify(this.originalContact));
 
-      if (this.originalContact.group && this.originalContact.group.length > 0) {
-        this.groupContacts = JSON.parse(
-          JSON.stringify(this.originalContact.group)
-        );
-      }
+        if (
+          this.originalContact.group &&
+          this.originalContact.group.length > 0
+        ) {
+          this.groupContacts = JSON.parse(
+            JSON.stringify(this.originalContact.group)
+          );
+        }
+      });
 
       console.log(this.duplicate);
     });
@@ -53,7 +57,8 @@ export class ContactEditComponent implements OnInit {
   onSubmit(form: NgForm) {
     const value = form.value;
     const newContact = new Contact(
-      this.contact?.id || '',
+      '',
+      value.id,
       value.name,
       value.email,
       value.phone,
@@ -105,9 +110,11 @@ export class ContactEditComponent implements OnInit {
   }
 
   onRemoveItem(index: number) {
+    debugger;
     if (index < 0 || index >= this.groupContacts.length) {
       return;
     }
     this.groupContacts.splice(index, 1);
+    debugger;
   }
 }

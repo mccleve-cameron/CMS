@@ -1,4 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { Contact } from 'src/app/contacts/contact.model';
+import { ContactService } from 'src/app/contacts/contact.service';
 import { Message } from '../message.model';
 import { MessageService } from '../message.service';
 
@@ -10,31 +13,34 @@ import { MessageService } from '../message.service';
 export class MessageEditComponent implements OnInit {
   @ViewChild('subject') subjectRef: ElementRef;
   @ViewChild('msgText') msgTextRef: ElementRef;
+  currentSender: Contact;
 
-  message: Message;
-  id: string;
-  currentSender = '10';
+  constructor(
+    private messageService: MessageService,
+    private router: Router,
+    private contactService: ContactService
+  ) {}
 
-  constructor(private messageService: MessageService) {}
-
-  ngOnInit() {}
+  ngOnInit() {
+    this.contactService.getContact('101').subscribe((response) => {
+      this.currentSender = response.contact;
+    });
+  }
 
   onSendMessage() {
     const subjectValue = this.subjectRef.nativeElement.value;
     const msgTextValue = this.msgTextRef.nativeElement.value;
 
-    console.log(subjectValue);
-    console.log(msgTextValue);
-    console.log(this.currentSender);
-
-    const newMessage = new Message(
-      this.message?.id || '',
+    const newMessage: Message = new Message(
+      '',
+      '101',
       subjectValue,
       msgTextValue,
       this.currentSender
     );
 
     this.messageService.addMessage(newMessage);
+    // this.router.navigate(['/messages']);
 
     this.onClear();
   }

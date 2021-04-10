@@ -17,27 +17,31 @@ export class ContactService {
     if (!contact) {
       return;
     }
-    const pos = this.contacts.indexOf(contact);
+
+    const pos = this.contacts.findIndex((d) => d.id === contact.id);
+
     if (pos < 0) {
       return;
     }
-    this.contacts.splice(pos, 1);
-    this.contactChangedEvent.next(this.contacts.slice());
+
+    // delete from database
+    this.http
+      .delete('http://localhost:3000/contacts/' + contact.id)
+      .subscribe((response: Response) => {
+        this.contacts.splice(pos, 1);
+        this.sortAndSend();
+      });
   }
 
   getContacts() {
     this.http
-      .get(
-        'https://cms-project-a35c5-default-rtdb.firebaseio.com/contacts.json'
+      .get<{ message: string; contacts: Contact[] }>(
+        'http://localhost:3000/contacts'
       )
       .subscribe(
-        (contacts: Contact[]) => {
-          this.contacts = contacts;
-          this.maxContactId = this.getMaxId();
-          this.contacts.sort((a, b) =>
-            a.name > b.name ? 1 : b.name > a.name ? -1 : 0
-          );
-          this.contactChangedEvent.next(this.contacts.slice());
+        (responseData) => {
+          this.contacts = responseData.contacts;
+          this.sortAndSend();
         },
 
         (error: any) => {
@@ -46,8 +50,11 @@ export class ContactService {
       );
   }
 
-  getContact(id: string): Contact {
-    return this.contacts.find((contact) => contact.id === id);
+  getContact(id: string) {
+    // return this.contacts.find((contact) => contact.id === id);
+    return this.http.get<{ message: string; contact: Contact }>(
+      'http://localhost:3000/contacts/' + id
+    );
   }
 
   getMaxId(): number {
@@ -63,43 +70,62 @@ export class ContactService {
     return maxId;
   }
 
-  storeContacts() {
-    let contacts = JSON.stringify(this.contacts);
+  sortAndSend() {
+    this.contacts.sort((a, b) =>
+      a.name > b.name ? 1 : b.name > a.name ? -1 : 0
+    );
+    this.contactChangedEvent.next(this.contacts.slice());
+  }
 
-    console.log('stored called');
+  addContact(contact: Contact) {
+    if (!contact) {
+      return;
+    }
 
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
+    // make sure id of the new Contact is empty
+    contact.id = '';
 
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    // add to database
     this.http
-      .put(
-        'https://cms-project-a35c5-default-rtdb.firebaseio.com/contacts.json',
-        contacts,
+      .post<{ message: string; contact: Contact }>(
+        'http://localhost:3000/contacts',
+        contact,
         { headers: headers }
       )
-      .subscribe(() => {
-        this.contactChangedEvent.next(this.contacts.slice());
+      .subscribe((responseData) => {
+        // add new contact to contacts
+        this.contacts.push(responseData.contact);
+        console.log('contact RESPONSE = ', responseData);
+        this.sortAndSend();
       });
-  }
-  addContact(newContact: Contact) {
-    if (!newContact) return;
-
-    this.maxContactId++;
-    newContact.id = this.maxContactId.toString();
-    this.contacts.push(newContact);
-
-    this.storeContacts();
   }
 
   updateContact(originalContact: Contact, newContact: Contact) {
-    if (!originalContact || !newContact) return;
+    if (!originalContact || !newContact) {
+      return;
+    }
 
-    const pos = this.contacts.indexOf(originalContact);
-    if (pos < 0) return;
+    const pos = this.contacts.findIndex((d) => d.id === originalContact.id);
 
+    if (pos < 0) {
+      return;
+    }
+
+    // set the id of the new Contact to the id of the old Contact
     newContact.id = originalContact.id;
-    this.contacts[pos] = newContact;
-    this.storeContacts();
+
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    // update database
+    this.http
+      .put('http://localhost:3000/contacts/' + originalContact.id, newContact, {
+        headers: headers,
+      })
+      .subscribe((response: Response) => {
+        this.contacts[pos] = newContact;
+        this.sortAndSend();
+      });
   }
 }

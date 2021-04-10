@@ -15,6 +15,7 @@ export class DocumentEditComponent implements OnInit {
   tmp: Document[];
   editMode: boolean = false;
   id: string;
+
   constructor(
     private documentService: DocumentService,
     private router: Router,

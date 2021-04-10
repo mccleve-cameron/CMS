@@ -10,10 +10,10 @@
             class="form-control required"
             size="120"
             max="120"
-            [ngModel]="contact?.name"
             name="name"
-            required
+            [ngModel]="originalContact?.name"
             #name="ngModel"
+            required
           />
         </div>
       </div>
@@ -27,7 +27,7 @@
             class="form-control required"
             size="120"
             max="255"
-            [ngModel]="contact?.email"
+            [ngModel]="originalContact?.email"
             name="email"
             required
             #email="ngModel"
@@ -47,7 +47,7 @@
             class="form-control invalid"
             size="150"
             max="255"
-            [ngModel]="contact?.phone"
+            [ngModel]="originalContact?.phone"
             name="phone"
             pattern="\D*([2-9]\d{2})(\D*)([2-9]\d{2})(\D*)(\d{4})\D*"
             #phone="ngModel"
@@ -66,7 +66,7 @@
             class="form-control"
             size="150"
             max="255"
-            [ngModel]="contact?.imageUrl"
+            [ngModel]="originalContact?.imageUrl"
             name="imageUrl"
           />
         </div>
@@ -94,7 +94,7 @@
             [dropZones]="['contactGroup']"
             (onDropSuccess)="addToGroup($event)"
           >
-            <!-- [ngModel]="contact?.group" -->
+            <!-- [ngModel]="originalContact?.group" -->
             <div *ngFor="let contact of groupContacts; let i = index">
               <div>
                 <cms-contact-item
